@@ -77,6 +77,7 @@ $("#select_model").change(function() {
 
 function query_csv(lon, lat, year, state, returnPeriod, model) {
     let data = {lon: lon, lat: lat, year: year, state: state, returnPeriod: returnPeriod, model: model};
+
     $.ajax({
         type: 'GET',
         url: URL_querycsv,
@@ -146,12 +147,17 @@ function addCptTableRow(lon, lat, csr, qreq, ev_ku_ref, ev_bi_ref, gv_ku_max, gv
     cell1.innerHTML = $("#select_return_period").val();
     cell2.innerHTML = lon;
     cell3.innerHTML = lat;
-    cell4.innerHTML = (parseFloat(csr).toFixed(2));
-    cell5.innerHTML = (parseFloat(qreq).toFixed(2));
-    cell6.innerHTML = (parseFloat(ev_ku_ref).toFixed(2));
-    cell7.innerHTML = (parseFloat(ev_bi_ref).toFixed(2));
-    cell8.innerHTML = (parseFloat(gv_ku_max).toFixed(2));
-    cell9.innerHTML = (parseFloat(gv_bi_max).toFixed(2));
+    cell4.innerHTML = (parseFloat(csr).toFixed(3));
+    cell5.innerHTML = (parseFloat(qreq).toFixed(3));
+    cell6.innerHTML = (parseFloat(ev_ku_ref).toFixed(3));
+    cell7.innerHTML = (parseFloat(ev_bi_ref).toFixed(3));
+    cell8.innerHTML = (parseFloat(gv_ku_max).toFixed(3));
+    cell9.innerHTML = (parseFloat(gv_bi_max).toFixed(3));
+
+    
+
+
+
     cell10.innerHTML = '<button onclick="deleteTableRow(this)">Delete Row</button>';
 }
 

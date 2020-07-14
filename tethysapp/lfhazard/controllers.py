@@ -117,8 +117,8 @@ def query_csv(request):
         closest_rows = df.loc[(df['Longitude'] == nearest_pt[1].x) & (df['Latitude'] == nearest_pt[1].y)]
         qreq = closest_rows['Qreq'].values[0]
 
-        # get Ev_ku and Ev_bi from the KU_LT_returnperiod csv files
-        csv = os.path.join(csv_base_path, f'LS-{returnPeriod}', f'LS_{returnPeriod}_{state}.csv')
+        # get Ev_ku and Ev_bi from the Set-returnperiod csv files
+        csv = os.path.join(csv_base_path, f'Set-{returnPeriod}', f'Set_{returnPeriod}_{state}.csv')
         df = pd.read_csv(csv)
         # determine the closest point
         points_df = df.loc[:, "Longitude":"Latitude"].apply(Point, axis=1)
@@ -127,8 +127,8 @@ def query_csv(request):
         ku_strain_ref = closest_rows['Ku Strain (%)'].values[0]
         bi_strain_ref = closest_rows['B&I Strain (%)'].values[0]
 
-        # get Ev_ku_max and Ev_bi_max from the KU_LT_returnperiod csv files
-        csv = os.path.join(csv_base_path, f'Set-{returnPeriod}', f'Set_{returnPeriod}_{state}.csv')
+        # get gamma_ku_max and gamma_bi_max from the LS_returnperiod csv files
+        csv = os.path.join(csv_base_path, f'LS-{returnPeriod}', f'LS_{returnPeriod}_{state}.csv')
         df = pd.read_csv(csv)
         # determine the closest point
         points_df = df.loc[:, "Longitude":"Latitude"].apply(Point, axis=1)
@@ -137,7 +137,7 @@ def query_csv(request):
         ku_strain_max = closest_rows['Ku Strain (%)'].values[0]
         bi_strain_max = closest_rows['B&I Strain (%)'].values[0]
 
-        return JsonResponse({'point_value': [csr, qreq, ku_strain_ref, bi_strain_ref, ku_strain_max, bi_strain_max]})
+        return JsonResponse({'point_value': [float(csr), float(qreq), float(ku_strain_ref), float(bi_strain_ref), float(ku_strain_max), float(bi_strain_max)]})
 
     elif model == 'spt':
         result = {}
