@@ -8,6 +8,7 @@ import os
 import math
 
 import pandas as pd
+import numpy as np
 from shapely.geometry import Point, MultiPoint
 from shapely.ops import nearest_points
 
@@ -83,6 +84,29 @@ def get_geojson(request):
         return JsonResponse(json.loads(gj.read()))
 
 
+def interpolate_idw(a: np.array, loc: tuple, p: int = 1):
+    """
+    Computes the interpolated value at a specified location (loc) from an array of measured values (a)
+
+    :param a: a numpy array with 3 columns (x, y, value) and a row for each measurement
+    :param loc: a tuple of (x, y) coordinates representing the location to get the interpolated values at
+    :param p: an integer representing the power factor used to addtionaly weight the distances (usually 1, 2, 3)
+    :return: float representing the IDW interpolated value at the loc specified
+    """
+    # identify the x distance from location to the measurement points
+    x = np.subtract(a[:, 0], loc[0])
+    # identify the y distance from location to the measurement points
+    y = np.subtract(a[:, 1], loc[1])
+    # compute the pythagorean distance (square root sum of the squares)
+    distance = np.sqrt(np.add(np.multiply(x, x), np.multiply(y, y)))
+    # raise distances to power (usually 1 or 2)
+    distance = np.power(distance, p)
+    # inverse the distances
+    distance = np.divide(1, distance)
+
+    return np.divide(np.sum(np.multiply(distance, a[:, 2])), np.sum(distance))
+
+
 def query_csv(request):
     """
     From the lon and lat interpolates from 4 of the closests points from a csv files,
@@ -97,47 +121,33 @@ def query_csv(request):
     csv_base_path = os.path.join(App.get_app_workspace().path, model, year)
 
     if model == 'cpt':
-        point = Point(float(lon), float(lat))
+        point = (float(lon), float(lat))
+        p = 2
 
         # get CSR from the BI_LT_returnperiod csvs
-        csv = os.path.join(csv_base_path, f'BI_LT-{returnPeriod}', f'BI_LT_{returnPeriod}_{state}.csv')
-        df = pd.read_csv(csv)
-        # determine the closest point
-        points_df = df.loc[:, "Longitude":"Latitude"].apply(Point, axis=1)
-        nearest_pt = nearest_points(point, MultiPoint(points_df.tolist()))
-        closest_rows = df.loc[(df['Longitude'] == nearest_pt[1].x) & (df['Latitude'] == nearest_pt[1].y)]
-        csr = closest_rows['CSR'].values[0]
+        df = pd.read_csv(os.path.join(
+            csv_base_path, f'BI_LT-{returnPeriod}', f'BI_LT_{returnPeriod}_{state}.csv'))
+        csr = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, p)
 
         # get Qreq from the KU_LT_returnperiod csv files
-        csv = os.path.join(csv_base_path, f'KU_LT-{returnPeriod}', f'KU_LT_{returnPeriod}_{state}.csv')
-        df = pd.read_csv(csv)
-        # determine the closest point
-        points_df = df.loc[:, "Longitude":"Latitude"].apply(Point, axis=1)
-        nearest_pt = nearest_points(point, MultiPoint(points_df.tolist()))
-        closest_rows = df.loc[(df['Longitude'] == nearest_pt[1].x) & (df['Latitude'] == nearest_pt[1].y)]
-        qreq = closest_rows['Qreq'].values[0]
+        df = pd.read_csv(os.path.join(
+            csv_base_path, f'KU_LT-{returnPeriod}', f'KU_LT_{returnPeriod}_{state}.csv'))
+        qreq = interpolate_idw(df[['Longitude', 'Latitude', 'Qreq']].values, point, p)
 
         # get Ev_ku and Ev_bi from the Set-returnperiod csv files
-        csv = os.path.join(csv_base_path, f'Set-{returnPeriod}', f'Set_{returnPeriod}_{state}.csv')
-        df = pd.read_csv(csv)
-        # determine the closest point
-        points_df = df.loc[:, "Longitude":"Latitude"].apply(Point, axis=1)
-        nearest_pt = nearest_points(point, MultiPoint(points_df.tolist()))
-        closest_rows = df.loc[(df['Longitude'] == nearest_pt[1].x) & (df['Latitude'] == nearest_pt[1].y)]
-        ku_strain_ref = closest_rows['Ku Strain (%)'].values[0]
-        bi_strain_ref = closest_rows['B&I Strain (%)'].values[0]
+        df = pd.read_csv(os.path.join(
+            csv_base_path, f'Set-{returnPeriod}', f'Set_{returnPeriod}_{state}.csv'))
+        ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, p)
+        bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, p)
 
         # get gamma_ku_max and gamma_bi_max from the LS_returnperiod csv files
-        csv = os.path.join(csv_base_path, f'LS-{returnPeriod}', f'LS_{returnPeriod}_{state}.csv')
-        df = pd.read_csv(csv)
-        # determine the closest point
-        points_df = df.loc[:, "Longitude":"Latitude"].apply(Point, axis=1)
-        nearest_pt = nearest_points(point, MultiPoint(points_df.tolist()))
-        closest_rows = df.loc[(df['Longitude'] == nearest_pt[1].x) & (df['Latitude'] == nearest_pt[1].y)]
-        ku_strain_max = closest_rows['Ku Strain (%)'].values[0]
-        bi_strain_max = closest_rows['B&I Strain (%)'].values[0]
+        df = pd.read_csv(os.path.join(
+            csv_base_path, f'LS-{returnPeriod}', f'LS_{returnPeriod}_{state}.csv'))
+        ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, p)
+        bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, p)
 
-        return JsonResponse({'point_value': [float(csr), float(qreq), float(ku_strain_ref), float(bi_strain_ref), float(ku_strain_max), float(bi_strain_max)]})
+        return JsonResponse({'point_value': [float(csr), float(qreq), float(ku_strain_ref), float(bi_strain_ref),
+                                             float(ku_strain_max), float(bi_strain_max)]})
 
     elif model == 'spt':
         result = {}
