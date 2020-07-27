@@ -5,7 +5,6 @@ from django.http import JsonResponse
 
 import json
 import os
-import math
 
 import pandas as pd
 import numpy as np

@@ -10,7 +10,8 @@ requirements:
     channels:
       - conda-forge
     packages:
-      - shapely
+      - numpy
+      - pandas
 
   pip:
 
