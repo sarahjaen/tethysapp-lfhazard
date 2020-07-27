@@ -1,4 +1,4 @@
-var csrftoken = Cookies.get('csrftoken');
+let csrftoken = Cookies.get('csrftoken');
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -19,11 +19,7 @@ function getStateBoundaries() {
         success: function (json) {
             state.clearLayers();
             state.addData(json);
-            if ($("#select_state").val() === 'Alaska') {
-                map.flyToBounds({"_southWest":{"lat":46.437856895024204,"lng":-254.88281250000003},"_northEast":{"lat":75.71563324165896,"lng":-57.48046875000001}})
-            } else {
-                map.flyToBounds(state.getBounds())
-            }
+            map.flyToBounds(state.getBounds());
         },
     })
 }

@@ -16,14 +16,14 @@ resource_files += find_resource_files('tethysapp/' + app_package + '/workspaces'
 
 setup(
     name=release_package,
-    version='0.0.1',
+    version='0.3',
     description='',
     long_description='',
     keywords='',
-    author='',
+    author='Riley Hales, Tylor Bayer, Kevin Liang',
     author_email='',
     url='',
-    license='',
+    license='BSD Clear 3 Clause',
     packages=find_namespace_packages(),
     package_data={'': resource_files},
     include_package_data=True,
