@@ -70,7 +70,9 @@ $("#select_model").change(function() {
     }
     getStateBoundaries();
 })
-
+function submitButton() {
+    query_csv(parseFloat($("#lon-input").val()), parseFloat($("#lat-input").val()), $("#select_year").val(), $("#select_state").val(), $("#select_return_period").val(), $("#select_model").val())
+}
 function query_csv(lon, lat, year, state, returnPeriod, model) {
     let data = {lon: lon, lat: lat, year: year, state: state, returnPeriod: returnPeriod, model: model};
 
@@ -117,11 +119,11 @@ function addSptTableRow(lon, lat, logDvalue, Nvalue, CSRvalue, Cetinvalue, InYva
     cell3.innerHTML = lat;
     cell4.innerHTML = (parseFloat(CSRvalue).toFixed(2));
     cell5.innerHTML = (parseFloat(Nvalue).toFixed(2));
-    cell6.innerHTML = (parseFloat(RnSvalue).toFixed(2));
-    cell7.innerHTML = (parseFloat(BnTvalue).toFixed(2));
+    cell6.innerHTML = (parseFloat(Cetinvalue).toFixed(2));
+    cell7.innerHTML = (parseFloat(InYvalue).toFixed(2));
     cell8.innerHTML = (parseFloat(logDvalue).toFixed(2));
-    cell9.innerHTML = (parseFloat(Cetinvalue).toFixed(2));
-    cell10.innerHTML = (parseFloat(InYvalue).toFixed(2));
+    cell9.innerHTML = (parseFloat(RnSvalue).toFixed(2));
+    cell10.innerHTML = (parseFloat(BnTvalue).toFixed(2));
     cell11.innerHTML = '<button onclick="deleteTableRow(this)">Delete Row</button>';
 }
 function addCptTableRow(lon, lat, csr, qreq, ev_ku_ref, ev_bi_ref, gv_ku_max, gv_bi_max) {

@@ -1,4 +1,4 @@
-Long,Lat,Cetin_percent,IandY_percent,PB_Seismic_Slope_Disp_RandS,PB_Seismic_Slope_Disp_BandT,State
+Longitude,Latitude,Cetin_percent,IandY_percent,PB_Seismic_Slope_Disp_RandS,PB_Seismic_Slope_Disp_BandT,State
 -112.057,41.555,0.565350251,0.287294902,1.716108685,3.226522647,Idaho
 -110.954,41.794,0.988630538,0.642996435,4.339189818,5.445447006,Idaho
 -110.93,41.794,0.908023983,0.738011676,5.210177688,6.116885021,Idaho

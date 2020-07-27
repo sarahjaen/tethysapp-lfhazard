@@ -1,4 +1,4 @@
-Long,Lat,Cetin_percent,IandY_percent,PB_Seismic_Slope_Disp_RandS,PB_Seismic_Slope_Disp_BandT,State
+Longitude,Latitude,Cetin_percent,IandY_percent,PB_Seismic_Slope_Disp_RandS,PB_Seismic_Slope_Disp_BandT,State
 -111.403,38.523,0,0,0.5,1.370285848,Utah
 -111.312,38.524,0,0,0.5,1.192761324,Utah
 -111.128,38.524,0,0,0.5,0.836548398,Utah

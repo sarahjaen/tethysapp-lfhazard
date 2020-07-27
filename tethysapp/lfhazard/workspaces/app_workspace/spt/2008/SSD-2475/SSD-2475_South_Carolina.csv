@@ -1,4 +1,4 @@
-Long,Lat,Cetin_percent,IandY_percent,PB_Seismic_Slope_Disp_RandS,PB_Seismic_Slope_Disp_BandT,State
+Longitude,Latitude,Cetin_percent,IandY_percent,PB_Seismic_Slope_Disp_RandS,PB_Seismic_Slope_Disp_BandT,State
 -81.886,33.328,0.135850598,0,0.5,1.578248256,South_Carolina
 -82.103,33.507,0,0,0.5,1.371165888,South_Carolina
 -81.888,33.508,0.116926496,0,0.5,1.731065793,South_Carolina
