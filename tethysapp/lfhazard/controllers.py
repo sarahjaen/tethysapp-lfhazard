@@ -157,30 +157,29 @@ def query_csv(request):
     csv_base_path = os.path.join(App.get_app_workspace().path, model, year)
 
     point = (float(lon), float(lat))
-    n = 4
 
     if model == 'cpt':
         # get CSR from the BI_LT_returnperiod csvs
         df = pd.read_csv(os.path.join(
             csv_base_path, f'BI_LT-{return_period}', f'BI_LT_{return_period}_{state}.csv'))
-        csr = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, nearest=n)
+        csr = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, bound=1)
 
         # get Qreq from the KU_LT_returnperiod csv files
         df = pd.read_csv(os.path.join(
             csv_base_path, f'KU_LT-{return_period}', f'KU_LT_{return_period}_{state}.csv'))
-        qreq = interpolate_idw(df[['Longitude', 'Latitude', 'Qreq']].values, point, nearest=n)
+        qreq = interpolate_idw(df[['Longitude', 'Latitude', 'Qreq']].values, point, bound=1)
 
         # get Ev_ku and Ev_bi from the Set-returnperiod csv files
         df = pd.read_csv(os.path.join(
             csv_base_path, f'Set-{return_period}', f'Set_{return_period}_{state}.csv'))
-        ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, nearest=n)
-        bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, nearest=n)
+        ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, bound=1)
+        bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, bound=1)
 
         # get gamma_ku_max and gamma_bi_max from the LS_returnperiod csv files
         df = pd.read_csv(os.path.join(
             csv_base_path, f'LS-{return_period}', f'LS_{return_period}_{state}.csv'))
-        ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, nearest=n)
-        bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, nearest=n)
+        ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, bound=1)
+        bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, bound=1)
 
         return JsonResponse({'point_value': [float(csr), float(qreq), float(ku_strain_ref), float(bi_strain_ref),
                                              float(ku_strain_max), float(bi_strain_max)]})
@@ -190,21 +189,21 @@ def query_csv(request):
         # read the LS file and get the Log Dh ref value
         df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}', f'LS-{return_period}_{state}.csv'))
         if year == '2008':
-            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'D__m_']].values, point, n=n)
+            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'D__m_']].values, point, bound=1)
         else:
-            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'log(D)']].values, point, n=n)
+            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'log(D)']].values, point, bound=1)
 
         # read the LT file and get the N req value and the CSR % value
         df = pd.read_csv(os.path.join(csv_base_path, f'LT-{return_period}', f'LT-{return_period}_{state}.csv'))
-        n_req_cetin = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Nreq_Cetin']].values, point, n=n)
-        pb_csr = interpolate_idw(df[['Longitude', 'Latitude', 'PB_CSR_']].values, point, n=n)
+        n_req_cetin = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Nreq_Cetin']].values, point, bound=1)
+        pb_csr = interpolate_idw(df[['Longitude', 'Latitude', 'PB_CSR_']].values, point, bound=1)
 
         # read the SSD file and get the N req value and the CSR % value
         df = pd.read_csv(os.path.join(csv_base_path, f'SSD-{return_period}', f'SSD-{return_period}_{state}.csv'))
-        epsilon_v_cetin = interpolate_idw(df[['Longitude', 'Latitude', 'Cetin_percent']].values, point, n=n)
-        epsilon_v_IandY = interpolate_idw(df[['Longitude', 'Latitude', 'IandY_percent']].values, point, n=n)
-        disp_RandS = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Seismic_Slope_Disp_RandS']].values, point, n=n)
-        disp_BandT = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Seismic_Slope_Disp_BandT']].values, point, n=n)
+        epsilon_v_cetin = interpolate_idw(df[['Longitude', 'Latitude', 'Cetin_percent']].values, point, bound=1)
+        epsilon_v_IandY = interpolate_idw(df[['Longitude', 'Latitude', 'IandY_percent']].values, point, bound=1)
+        disp_RandS = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Seismic_Slope_Disp_RandS']].values, point, bound=1)
+        disp_BandT = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Seismic_Slope_Disp_BandT']].values, point, bound=1)
 
         return JsonResponse({'point_value': [float(log_D), float(n_req_cetin), float(pb_csr), float(epsilon_v_cetin),
                                              float(epsilon_v_IandY), float(disp_RandS), float(disp_BandT)]})
