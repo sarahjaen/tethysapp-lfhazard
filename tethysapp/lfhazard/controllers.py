@@ -81,17 +81,33 @@ def get_geojson(request):
         return JsonResponse(json.loads(gj.read()))
 
 
-def interpolate_idw(a: np.array, loc: tuple, p: int = 1, r: int or float = None, n: int = None, ) -> float:
+def interpolate_idw(a: np.array, loc: tuple, p: int = 1, r: int or float = None, nearest: int = None,
+                    bound: int = None) -> float:
     """
-    Computes the interpolated value at a specified location (loc) from an array of measured values (a)
     Copyright (c) Riley Hales, 2020. BSD 3 Clause Clear License. All rights reserved.
+
+    Computes the interpolated value at a specified location (loc) from an array of measured values (a). There are 3
+    ways to limit the interpolation points considered.
+
+    1. Use a search radius: only points within a certain radius of the location to be interpolated will be considered
+    2. Choose a number of nearest neighbors to use.
+    3. Use a number of points that bound the interpolation location. That is, take the n nearest points
+
+    All 3 may be applied but the most restrictive option will govern. For example, suppose you choose a radius of 10
+    and to use the 5 nearest neighbors. If there are 100 points within the radius of 10, 95 of them will be ignored
+    since you limited the interpolation to the nearest 5 points. Similarly, If you choose to take 5 points from each of
+    the bounding quadrants and also the nearest 5 neighbors, then 15 of the points chosen because they bound the
+    location will get ignored. This behavior could be intentional so the all 3 options can still be applied.
+
     Args:
         a (np.array): a numpy array with 3 columns (x, y, value) and a row for each measurement
         loc (tuple): a tuple of (x, y) coordinates representing the location to get the interpolated values at
         p (int): an integer representing the power factor applied to the distances before inverting (usually 1, 2, 3)
-        r (int or float): the radius, in length units of the x & y values, to limit the value pairs in a. only points <=
+        r (int or float): the radius, same length units as x & y values, to limit the value pairs in a. only points <=
             r distance away are used for the interpolation
-        n: the number of nearest points to consider as part of the interpolation
+        nearest (int): number of nearest points to include in the interpolation, if that many are available.
+        bound (int): number of nearest points to include from the 4 bounding quadrants, if that many are available.
+
     Returns:
         float, the IDW interpolated value for the loc specified
     """
@@ -103,18 +119,24 @@ def interpolate_idw(a: np.array, loc: tuple, p: int = 1, r: int or float = None,
     val = a[:, 2]
     # compute the pythagorean distance (square root sum of the squares)
     dist = np.sqrt(np.add(np.multiply(x, x), np.multiply(y, y)))
-    # raise distances to power (usually 1 or 2)
-    dist = np.power(dist, p)
-    # filter the nearest number of points and/or limit by radius
-    if r is not None or n is not None:
-        b = pd.DataFrame({'dist': dist, 'val': val})
-        if n is not None:
-            b = b.sort_values('dist').head(n)
+    # filter the nearest number of points, limit by radius, and/or use bounding points (all use df sorted by distance)
+    if r is not None or nearest is not None or bound is not None:
+        b = pd.DataFrame({'dist': dist, 'val': val, 'x': x, 'y': y})
+        b.sort_values('dist', inplace=True)
+        if bound is not None:
+            b = pd.concat((b.loc[(b['x'] >= 0) & (b['y'] > 0)].head(bound),
+                           b.loc[(b['x'] >= 0) & (b['y'] < 0)].head(bound),
+                           b.loc[(b['x'] < 0) & (b['y'] > 0)].head(bound),
+                           b.loc[(b['x'] < 0) & (b['y'] < 0)].head(bound), ))
+        if nearest is not None:
+            b = b.head(nearest)
         if r is not None:
             b = b[b['dist'] <= r]
         dist = b['dist'].values
         val = b['val'].values
 
+    # raise distances to power (usually 1 or 2)
+    dist = np.power(dist, p)
     # inverse the distances
     dist = np.divide(1, dist)
 
@@ -141,24 +163,24 @@ def query_csv(request):
         # get CSR from the BI_LT_returnperiod csvs
         df = pd.read_csv(os.path.join(
             csv_base_path, f'BI_LT-{return_period}', f'BI_LT_{return_period}_{state}.csv'))
-        csr = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, n=n)
+        csr = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, nearest=n)
 
         # get Qreq from the KU_LT_returnperiod csv files
         df = pd.read_csv(os.path.join(
             csv_base_path, f'KU_LT-{return_period}', f'KU_LT_{return_period}_{state}.csv'))
-        qreq = interpolate_idw(df[['Longitude', 'Latitude', 'Qreq']].values, point, n=n)
+        qreq = interpolate_idw(df[['Longitude', 'Latitude', 'Qreq']].values, point, nearest=n)
 
         # get Ev_ku and Ev_bi from the Set-returnperiod csv files
         df = pd.read_csv(os.path.join(
             csv_base_path, f'Set-{return_period}', f'Set_{return_period}_{state}.csv'))
-        ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, n=n)
-        bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, n=n)
+        ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, nearest=n)
+        bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, nearest=n)
 
         # get gamma_ku_max and gamma_bi_max from the LS_returnperiod csv files
         df = pd.read_csv(os.path.join(
             csv_base_path, f'LS-{return_period}', f'LS_{return_period}_{state}.csv'))
-        ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, n=n)
-        bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, n=n)
+        ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, nearest=n)
+        bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, nearest=n)
 
         return JsonResponse({'point_value': [float(csr), float(qreq), float(ku_strain_ref), float(bi_strain_ref),
                                              float(ku_strain_max), float(bi_strain_max)]})
