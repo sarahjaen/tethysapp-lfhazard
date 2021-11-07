@@ -10,7 +10,7 @@ $.ajaxSetup({
         }
     }
 });
-function getStateBoundaries() {
+const getStateBoundaries = () => {
     $.ajax({
         type: 'GET',
         async: true,
@@ -74,7 +74,7 @@ function submitButton() {
     query_csv(parseFloat($("#lon-input").val()), parseFloat($("#lat-input").val()), $("#select_year").val(), $("#select_state").val(), $("#select_return_period").val(), $("#select_model").val())
 }
 function query_csv(lon, lat, year, state, returnPeriod, model) {
-    let data = {lon: lon, lat: lat, year: year, state: state, returnPeriod: returnPeriod, model: model};
+    const data = {lon: lon, lat: lat, year: year, state: state, returnPeriod: returnPeriod, model: model};
 
     $.ajax({
         type: 'GET',
@@ -82,11 +82,29 @@ function query_csv(lon, lat, year, state, returnPeriod, model) {
         dataType: 'json',
         data: data,
         success: function (results) {
-            let point_value = results.point_value;
             if (model === 'spt'){
-                addSptTableRow(lon.toFixed(4), lat.toFixed(4), point_value[0], point_value[1], point_value[2], point_value[3], point_value[4], point_value[5], point_value[6])
+                addSptTableRow(
+                    lon.toFixed(4),
+                    lat.toFixed(4),
+                    results.logD,
+                    results.nReqCetin,
+                    results.pbCSR,
+                    results.epsVCetin,
+                    results.epsVIY,
+                    results.dispRS,
+                    results.dispBY,
+                )
             } else {
-                addCptTableRow(lon.toFixed(4), lat.toFixed(4), point_value[0], point_value[1], point_value[2], point_value[3], point_value[4], point_value[5], point_value[6])
+                addCptTableRow(
+                    lon.toFixed(4),
+                    lat.toFixed(4),
+                    results.csr,
+                    results.qReq,
+                    results.kuStrainRef,
+                    results.biStrainRef,
+                    results.kuStrainMax,
+                    results.biStrainMax
+                )
             }
         },
     });
@@ -152,7 +170,7 @@ function addCptTableRow(lon, lat, csr, qreq, ev_ku_ref, ev_bi_ref, gv_ku_max, gv
     cell8.innerHTML = (parseFloat(gv_ku_max).toFixed(3));
     cell9.innerHTML = (parseFloat(gv_bi_max).toFixed(3));
 
-    
+
 
 
 
