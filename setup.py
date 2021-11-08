@@ -16,7 +16,7 @@ resource_files += find_resource_files('tethysapp/' + app_package + '/workspaces'
 
 setup(
     name=release_package,
-    version='1',
+    version='1.1',
     description='A tool for retrieving liquefaction hazard parameters'
                 'several states.',
     long_description='A tool for retrieving liquefaction hazard parameters based on Standard or Cone Penetration Tests '
