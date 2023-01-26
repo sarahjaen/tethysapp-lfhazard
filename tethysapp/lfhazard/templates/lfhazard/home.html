@@ -1,5 +1,5 @@
 {% extends "lfhazard/base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% load tethys_gizmos %}
 
 {% block app_navigation_items %}
@@ -56,13 +56,13 @@
 {% endblock %}
 
 {% block app_actions %}
-  <img src='/static/lfhazard/images/UDOT.png' style="width:150px;height:40px;">
-  <img src='/static/lfhazard/images/ADOT.gif' style="width:40px;height:40px;">
-  <img src='/static/lfhazard/images/IDOT.svg' style="width:150px;height:40px;">
-  <img src='/static/lfhazard/images/MDOT.gif' style="width:150px;height:40px;">
-  <img src='/static/lfhazard/images/ODOT.png' style="width:150px;height:40px;">
-  <img src='/static/lfhazard/images/SCDOT.png' style="width:150px;height:40px;">
-  <img src='/static/lfhazard/images/CDOT.png' style="width:40px;height:40px;">
+  <img src='{% static 'lfhazard/images/UDOT.png' %}' style="width:150px;height:40px;">
+  <img src='{% static 'lfhazard/images/ADOT.gif' %}' style="width:40px;height:40px;">
+  <img src='{% static 'lfhazard/images/IDOT.svg' %}' style="width:150px;height:40px;">
+  <img src='{% static 'lfhazard/images/MDOT.gif' %}' style="width:150px;height:40px;">
+  <img src='{% static 'lfhazard/images/ODOT.png' %}' style="width:150px;height:40px;">
+  <img src='{% static 'lfhazard/images/SCDOT.png' %}' style="width:150px;height:40px;">
+  <img src='{% static 'lfhazard/images/CDOT.png' %}' style="width:40px;height:40px;">
 {% endblock %}
 
 {% block content_dependent_styles %}
