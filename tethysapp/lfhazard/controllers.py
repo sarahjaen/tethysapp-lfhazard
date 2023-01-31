@@ -6,6 +6,7 @@ from tethys_sdk.routing import controller
 
 import json
 import os
+import glob
 
 import pandas as pd
 import numpy as np
@@ -13,25 +14,24 @@ import numpy as np
 from .app import Lfhazard as App
 
 
-@controller(name='index', url='/')
-def index(request):
+@controller(name='index', url='/', app_workspace=True)
+def index(request, app_workspace):
     """
     Controller for map page.
     """
+    state_geojsons = glob.glob(os.path.join(app_workspace.path, 'state_geojson', '*.geojson'))
+    state_geojsons = sorted([os.path.basename(f).replace('.geojson', '').title() for f in state_geojsons])
+    state_geojsons = [(s.replace('_', ' '), s) for s in state_geojsons]
+    state_geojsons = [('', '')] + state_geojsons
+
     # Define Gizmo Options
     select_model = SelectInput(
         display_text='Model Type:',
         name='select_model',
         multiple=False,
-        options=(('SPT (Standard Penetration Test)', 'spt'), ('CPT (Cone Penetration Test)', 'cpt')),
-        initial=('SPT (Standard Penetration Test)', 'spt'),
-    )
-    select_year = SelectInput(
-        display_text='Model/Data Year:',
-        name='select_year',
-        multiple=False,
-        options=[(2014, 2014), (2008, 2008)],
-        initial=[(2014, 2014)]
+        options=(('CPT (Cone Penetration Test)', 'cpt'),
+                 ('SPT (Standard Penetration Test)', 'spt')),
+        initial=('CPT (Cone Penetration Test)', 'cpt'),
     )
     select_return_period = SelectInput(
         display_text='Return Period (years):',
@@ -44,20 +44,8 @@ def index(request):
         display_text='State:',
         name='select_state',
         multiple=False,
-        options=[
-            ('Alaska', 'Alaska'),
-            ('Arizona', 'Arizona'),
-            ('California', 'California'),
-            ('Connecticut', 'Connecticut'),
-            ('Idaho', 'Idaho'),
-            ('Montana', 'Montana'),
-            ('Nevada', 'Nevada'),
-            ('Oregon', 'Oregon'),
-            ('South Carolina', 'South_Carolina'),
-            ('Utah', 'Utah'),
-            ('Washington', 'Washington'),
-        ],
-        initial=['Utah', 'Utah']
+        options=state_geojsons,
+        initial=['', '']
     )
 
     text_input_lat = TextInput(
@@ -71,7 +59,6 @@ def index(request):
 
     context = {
         'select_model': select_model,
-        'select_year': select_year,
         'select_return_period': select_return_period,
         'select_state': select_state,
         'text_input_lat': text_input_lat,
@@ -96,11 +83,10 @@ def query_csv(request):
     """
     lon = float(request.GET['lon'])
     lat = float(request.GET['lat'])
-    year = request.GET['year']
     state = request.GET['state']
     return_period = request.GET['returnPeriod']
     model = request.GET['model']
-    csv_base_path = os.path.join(App.get_app_workspace().path, model, year)
+    csv_base_path = os.path.join(App.get_app_workspace().path, model)
 
     point = (float(lon), float(lat))
 
@@ -108,33 +94,35 @@ def query_csv(request):
         # get CSR from the BI_LT_returnperiod csvs
         try:
             df = pd.read_csv(
-                os.path.join(csv_base_path, f'BI_LT-{return_period}', f'BI_LT_{return_period}_{state}.csv'))
+                os.path.join(csv_base_path, f'BI_LT_{return_period}_{state}.csv'))
             csr = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, bound=1)
         except Exception as e:
+            print(e)
+            print('fail 1')
             csr = ''
 
         # get Qreq from the KU_LT_returnperiod csv files
         try:
             df = pd.read_csv(
-                os.path.join(csv_base_path, f'KU_LT-{return_period}', f'KU_LT_{return_period}_{state}.csv'))
+                os.path.join(csv_base_path, f'KU_LT_{return_period}_{state}.csv'))
             qreq = interpolate_idw(df[['Longitude', 'Latitude', 'Qreq']].values, point, bound=1)
         except Exception as e:
             qreq = ''
 
         # get Ev_ku and Ev_bi from the Set-returnperiod csv files
         try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'Set-{return_period}', f'Set_{return_period}_{state}.csv'))
-            ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, bound=1)
-            bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, bound=1)
+            df = pd.read_csv(os.path.join(csv_base_path, f'Set_{return_period}_{state}.csv'))
+            ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain(%)']].values, point, bound=1)
+            bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain(%)']].values, point, bound=1)
         except Exception as e:
             ku_strain_ref = ''
             bi_strain_ref = ''
 
         # get gamma_ku_max and gamma_bi_max from the LS_returnperiod csv files
         try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}', f'LS_{return_period}_{state}.csv'))
-            ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain (%)']].values, point, bound=1)
-            bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain (%)']].values, point, bound=1)
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS_{return_period}_{state}.csv'))
+            ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain(%)']].values, point, bound=1)
+            bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain(%)']].values, point, bound=1)
         except Exception as e:
             ku_strain_max = ''
             bi_strain_max = ''
@@ -152,46 +140,16 @@ def query_csv(request):
         # Javascript expects return order: logDvalue, Nvalue, CSRvalue, Cetinvalue, InYvalue, RnSvalue, BnTvalue
         # read the LS file and get the Log Dh ref value
         try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}', f'LS-{return_period}_{state}.csv'))
-            if year == '2008':
-                log_D = interpolate_idw(df[['Longitude', 'Latitude', 'D__m_']].values, point, bound=1)
-            else:
-                log_D = interpolate_idw(df[['Longitude', 'Latitude', 'log(D)']].values, point, bound=1)
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
+            d = interpolate_idw(df[['Longitude', 'Latitude', 'D (m)']].values, point, bound=1)
+            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'log(d)']].values, point, bound=1)
         except Exception as e:
+            d = ''
             log_D = ''
 
-        # read the LT file and get the N req value and the CSR % value
-        try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'LT-{return_period}', f'LT-{return_period}_{state}.csv'))
-            n_req_cetin = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Nreq_Cetin']].values, point, bound=1)
-            pb_csr = interpolate_idw(df[['Longitude', 'Latitude', 'PB_CSR_']].values, point, bound=1)
-        except Exception as e:
-            n_req_cetin = ''
-            pb_csr = ''
-
-        # read the SSD file and get the N req value and the CSR % value
-        try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'SSD-{return_period}', f'SSD-{return_period}_{state}.csv'))
-            epsilon_v_cetin = interpolate_idw(df[['Longitude', 'Latitude', 'Cetin_percent']].values, point, bound=1)
-            epsilon_v_IandY = interpolate_idw(df[['Longitude', 'Latitude', 'IandY_percent']].values, point, bound=1)
-            disp_RandS = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Seismic_Slope_Disp_RandS']].values, point,
-                                         bound=1)
-            disp_BandT = interpolate_idw(df[['Longitude', 'Latitude', 'PB_Seismic_Slope_Disp_BandT']].values, point,
-                                         bound=1)
-        except Exception as e:
-            epsilon_v_cetin = ''
-            epsilon_v_IandY = ''
-            disp_RandS = ''
-            disp_BandT = ''
-
         return JsonResponse({
+            "d": d,
             "logD": log_D,
-            "nReqCetin": n_req_cetin,
-            "pbCSR": pb_csr,
-            "epsVCetin": epsilon_v_cetin,
-            "epsVIY": epsilon_v_IandY,
-            "dispRS": disp_RandS,
-            "dispBY": disp_BandT
         })
 
 

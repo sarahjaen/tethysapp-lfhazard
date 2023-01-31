@@ -5,7 +5,6 @@
 {% block app_navigation_items %}
   <li class="title">App Controls</li>
   {% gizmo select_input select_model %}
-  {% gizmo select_input select_year %}
   {% gizmo select_input select_return_period %}
   {% gizmo select_input select_state %}
   <li class="title">Search State by Lat/Lon</li>
@@ -17,27 +16,26 @@
 {% block app_content %}
   <div id="map" style="height: 50%"></div>
   <div class="lftable">
-    <table id="spt-table" style="width: 100%">
+    <table id="spt-table" style="width: 100%; display: none">
       <tr>
-        <th><i><b>Year</b></i></th>
         <th><i><b>Return Period</b></i></th>
         <th><i><b>Longitude</b></i></th>
         <th><i><b>Latitude</b></i></th>
-        <th><i><b>CSR(%)<sup>ref</sup></b></i></th>
-        <th><i><b>N<sub>req</sub><sup>ref</sup></b></i></th>
-        <th><i><b>&epsilon;<sub>v Cetin</sub>(%)<sup>ref</sup></b></i></th>
-        <th><b>&epsilon;<sub>v I&Y%</sub>(%)<sup>ref</sup></b></th>
+{#        <th><i><b>CSR(%)<sup>ref</sup></b></i></th>#}
+{#        <th><i><b>N<sub>req</sub><sup>ref</sup></b></i></th>#}
+{#        <th><i><b>&epsilon;<sub>v Cetin</sub>(%)<sup>ref</sup></b></i></th>#}
+{#        <th><b>&epsilon;<sub>v I&Y%</sub>(%)<sup>ref</sup></b></th>#}
+        <th><i><b>D (m)</b></i></th>
+{#        <th><i><b>D<sub>R&S</sub><sup>ref</sup></b></i></th>#}
+        {#        <th><i><b>D<sub>B&T</sub><sup>ref</sup></b></i></th>#}
         <th><i><b>Log D<sub>h</sub><sup>ref</sup></b></i></th>
-        <th><i><b>D<sub>R&S</sub><sup>ref</sup></b></i></th>
-        <th><i><b>D<sub>B&T</sub><sup>ref</sup></b></i></th>
         <td><b>
           <button id="Download_data" onclick="downloadTableData()">Download Data</button>
         </b></td>
       </tr>
     </table>
-    <table id="cpt-table" style="width: 100%; display: none">
+    <table id="cpt-table" style="width: 100%">
       <tr>
-        <th><i><b>Year</b></i></th>
         <th><i><b>Return Period</b></i></th>
         <th><i><b>Longitude</b></i></th>
         <th><i><b>Latitude</b></i></th>
