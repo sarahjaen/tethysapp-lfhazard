@@ -14,7 +14,7 @@ import numpy as np
 from .app import Lfhazard as App
 
 
-@controller(name='index', url='/', app_workspace=True)
+@controller(name='home', url='/', app_workspace=True)
 def index(request, app_workspace):
     """
     Controller for map page.

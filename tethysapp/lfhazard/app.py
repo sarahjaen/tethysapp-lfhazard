@@ -7,7 +7,7 @@ class Lfhazard(TethysAppBase):
     """
 
     name = 'Liquefaction Hazard Parameter Lookup'
-    index = 'index'
+    index = 'home'
     icon = 'lfhazard/images/icon.gif'
     package = 'lfhazard'
     root_url = 'lfhazard'
