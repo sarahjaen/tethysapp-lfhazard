@@ -95,6 +95,7 @@ function query_csv(lon, lat, state, returnPeriod, model) {
 }
 
 map.on('click', (function (event) {
+    if ($("#select_state").val() === '' || $("#select_return_period").val() === '' || $("#select_model").val() === '') return
     query_csv(
         event.latlng['lng'],
         event.latlng['lat'],

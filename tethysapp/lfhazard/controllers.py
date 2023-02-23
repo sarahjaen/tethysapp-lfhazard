@@ -14,7 +14,7 @@ import numpy as np
 from .app import Lfhazard as App
 
 
-@controller(name='home', url='/', app_workspace=True)
+@controller(name='home', app_workspace=True)
 def index(request, app_workspace):
     """
     Controller for map page.
@@ -68,14 +68,14 @@ def index(request, app_workspace):
     return render(request, 'lfhazard/home.html', context)
 
 
-@controller(name='getgeojson', url='/getgeojson')
+@controller(name='getgeojson', url='getgeojson')
 def get_geojson(request):
     state = str(request.GET.get('state', 'utah')).lower().replace(' ', '')
     with open(os.path.join(App.get_app_workspace().path, 'state_geojson', f'{state}.geojson'), 'r') as gj:
         return JsonResponse(json.loads(gj.read()))
 
 
-@controller(name='querycsv', url='/querycsv')
+@controller(name='querycsv', url='querycsv')
 def query_csv(request):
     """
     From the lon and lat interpolates from 4 of the closest points from a csv files,
