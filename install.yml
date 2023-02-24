@@ -2,6 +2,8 @@
 version: 2.0
 # This should match the app - package name in your setup.py
 name: lfhazard
+# This should be greater or equal to your tethys-platform in your environment
+tethys_version: ">=4.0.0"
 
 requirements:
   # Putting in a skip true param will skip the entire section. Ignoring the option will assume it be set to False

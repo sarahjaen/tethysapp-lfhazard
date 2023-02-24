@@ -14,12 +14,13 @@ import numpy as np
 from .app import Lfhazard as App
 
 
-@controller(name='home', app_workspace=True)
-def index(request, app_workspace):
+@controller(name='home')
+def index(request):
     """
     Controller for map page.
     """
-    state_geojsons = glob.glob(os.path.join(app_workspace.path, 'state_geojson', '*.geojson'))
+    workspace = App.get_custom_setting('data_path')
+    state_geojsons = glob.glob(os.path.join(workspace, 'state_geojson', '*.geojson'))
     state_geojsons = sorted([os.path.basename(f).replace('.geojson', '').title() for f in state_geojsons])
     state_geojsons = [(s.replace('_', ' '), s) for s in state_geojsons]
     state_geojsons = [('', '')] + state_geojsons
@@ -71,7 +72,7 @@ def index(request, app_workspace):
 @controller(name='getgeojson', url='getgeojson')
 def get_geojson(request):
     state = str(request.GET.get('state', 'utah')).lower().replace(' ', '')
-    with open(os.path.join(App.get_app_workspace().path, 'state_geojson', f'{state}.geojson'), 'r') as gj:
+    with open(os.path.join(App.get_custom_setting('data_path'), 'state_geojson', f'{state}.geojson'), 'r') as gj:
         return JsonResponse(json.loads(gj.read()))
 
 
@@ -86,7 +87,8 @@ def query_csv(request):
     state = request.GET['state']
     return_period = request.GET['returnPeriod']
     model = request.GET['model']
-    csv_base_path = os.path.join(App.get_app_workspace().path, model)
+    csv_base_path = os.path.join(App.get_custom_setting("data_path"), model)
+    print(csv_base_path)
 
     point = (float(lon), float(lat))
 

@@ -1,4 +1,5 @@
 from tethys_sdk.base import TethysAppBase
+from tethys_sdk.app_settings import CustomSetting
 
 
 class Lfhazard(TethysAppBase):
@@ -16,3 +17,13 @@ class Lfhazard(TethysAppBase):
     tags = ''
     enable_feedback = False
     feedback_emails = []
+
+    def custom_settings(self):
+        return (
+            CustomSetting(
+                name='data_path',
+                type=CustomSetting.TYPE_STRING,
+                description='Server path to the directory of CSV data',
+                required=True,
+            ),
+        )
