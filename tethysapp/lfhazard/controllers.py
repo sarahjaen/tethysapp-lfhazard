@@ -145,6 +145,12 @@ def query_csv(request):
             df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
             d = interpolate_idw(df[['Longitude', 'Latitude', 'D (m)']].values, point, bound=1)
             log_D = interpolate_idw(df[['Longitude', 'Latitude', 'log(d)']].values, point, bound=1)
+            N = interpolate_idw(df[['Longitude', 'Latitude', 'N']].values, point, bound=1)
+            CSR = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, bound=1)
+            Cetin = interpolate_idw(df[['Longitude', 'Latitude', 'Cetin']].values, point, bound=1)
+            InY = interpolate_idw(df[['Longitude', 'Latitude', 'InY']].values, point, bound=1)
+            RnS = interpolate_idw(df[['Longitude', 'Latitude', 'RnS']].values, point, bound=1)
+            BnT = interpolate_idw(df[['Longitude', 'Latitude', 'BnT']].values, point, bound=1)
         except Exception as e:
             d = ''
             log_D = ''
@@ -152,6 +158,12 @@ def query_csv(request):
         return JsonResponse({
             "d": d,
             "logD": log_D,
+            "N": N,
+            "CSR": CSR,
+            "Cetin": Cetin,
+            "InY": InY,
+            "RnS": RnS,
+            "BnT": BnT,
         })
 
 
