@@ -77,6 +77,12 @@ function query_csv(lon, lat, state, returnPeriod, model) {
                     lat.toFixed(4),
                     results.d,
                     results.logD,
+                    results.N,
+                    results.CSR,
+                    results.Cetin,
+                    results.InY,
+                    results.RnS,
+                    results.BnT
                 )
             } else {
                 addCptTableRow(
@@ -108,7 +114,7 @@ map.on('click', (function (event) {
 let spt_row_counter = 0
 let cpt_row_counter = 0
 
-function addSptTableRow(lon, lat, d, logD) {
+function addSptTableRow(lon, lat, d, logD, N, CSR, Cetin, InY, RnS, BnT) {
     spt_row_counter = spt_row_counter + 1;
     let table = document.getElementById("spt-table");
     let row = table.insertRow(1);
@@ -118,12 +124,24 @@ function addSptTableRow(lon, lat, d, logD) {
     let cell4 = row.insertCell(3);
     let cell5 = row.insertCell(4);
     let cell6 = row.insertCell(5);
+    let cell7 = row.insertCell(6);
+    let cell8 = row.insertCell(7);
+    let cell9 = row.insertCell(8);
+    let cell10 = row.insertCell(9);
+    let cell11 = row.insertCell(10);
+    let cell12 = row.insertCell(11)
     cell1.innerHTML = $("#select_return_period").val();
     cell2.innerHTML = lon;
     cell3.innerHTML = lat;
     cell4.innerHTML = (parseFloat(d).toFixed(5));
     cell5.innerHTML = (parseFloat(logD).toFixed(5));
-    cell6.innerHTML = '<button onclick="deleteTableRow(this)">Delete Row</button>';
+    cell6.innerHTML = (parseFloat(N).toFixed(5));
+    cell7.innerHTML = (parseFloat(CSR).toFixed(5));
+    cell8.innerHTML = (parseFloat(Cetin).toFixed(5));
+    cell9.innerHTML = (parseFloat(InY).toFixed(5));
+    cell10.innerHTML = (parseFloat(RnS).toFixed(5));
+    cell11.innerHTML = (parseFloat(BnT).toFixed(5));
+    cell12.innerHTML = '<button onclick="deleteTableRow(this)">Delete Row</button>';
 }
 
 function addCptTableRow(lon, lat, csr, qreq, ev_ku_ref, ev_bi_ref, gv_ku_max, gv_bi_max) {
