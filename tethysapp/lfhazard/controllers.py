@@ -92,6 +92,7 @@ def query_csv(request):
 
     point = (float(lon), float(lat))
 
+
     if model == 'cpt':
         # get CSR from the BI_LT_returnperiod csvs
         try:
@@ -111,18 +112,18 @@ def query_csv(request):
         except Exception as e:
             qreq = ''
 
-        # get Ev_ku and Ev_bi from the Set-returnperiod csv files
+        # get Ev_ku and Ev_bi from the LS-returnperiod csv files
         try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'Set_{return_period}_{state}.csv'))
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS_{return_period}_{state}.csv'))
             ku_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain(%)']].values, point, bound=1)
             bi_strain_ref = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain(%)']].values, point, bound=1)
         except Exception as e:
             ku_strain_ref = ''
             bi_strain_ref = ''
 
-        # get gamma_ku_max and gamma_bi_max from the LS_returnperiod csv files
+        # get gamma_ku_max and gamma_bi_max from the Set_returnperiod csv files
         try:
-            df = pd.read_csv(os.path.join(csv_base_path, f'LS_{return_period}_{state}.csv'))
+            df = pd.read_csv(os.path.join(csv_base_path, f'Set_{return_period}_{state}.csv'))
             ku_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'Ku Strain(%)']].values, point, bound=1)
             bi_strain_max = interpolate_idw(df[['Longitude', 'Latitude', 'B&I Strain(%)']].values, point, bound=1)
         except Exception as e:
@@ -143,26 +144,48 @@ def query_csv(request):
         # read the LS file and get the Log Dh ref value
         try:
             df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
-            d = interpolate_idw(df[['Longitude', 'Latitude', 'D (m)']].values, point, bound=1)
-            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'log(d)']].values, point, bound=1)
+            log_D = interpolate_idw(df[['Longitude', 'Latitude', 'logD']].values, point, bound=1)
+        except Exception as e:
+            log_D = ''
+        try:
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
             N = interpolate_idw(df[['Longitude', 'Latitude', 'N']].values, point, bound=1)
+        except Exception as e:
+            N = ''
+        try:
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
             CSR = interpolate_idw(df[['Longitude', 'Latitude', 'CSR']].values, point, bound=1)
+        except Exception as e:
+            CSR = ''
+        try:
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
             Cetin = interpolate_idw(df[['Longitude', 'Latitude', 'Cetin']].values, point, bound=1)
+        except Exception as e:
+            Cetin = ''
+        try:
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
             InY = interpolate_idw(df[['Longitude', 'Latitude', 'InY']].values, point, bound=1)
-            RnS = interpolate_idw(df[['Longitude', 'Latitude', 'RnS']].values, point, bound=1)
+        except Exception as e:
+            InY = ''
+        #try:
+            #df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
+            #RnS = interpolate_idw(df[['Longitude', 'Latitude', 'RnS']].values, point, bound=1)
+        #except Exception as e:
+            #RnS = ''
+        try:
+            df = pd.read_csv(os.path.join(csv_base_path, f'LS-{return_period}_{state}.csv'))
             BnT = interpolate_idw(df[['Longitude', 'Latitude', 'BnT']].values, point, bound=1)
         except Exception as e:
-            d = ''
-            log_D = ''
+            BnT = ''
+
 
         return JsonResponse({
-            "d": d,
             "logD": log_D,
             "N": N,
             "CSR": CSR,
             "Cetin": Cetin,
             "InY": InY,
-            "RnS": RnS,
+            #"RnS": RnS,
             "BnT": BnT,
         })
 
